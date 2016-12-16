@@ -7,8 +7,10 @@ find_package(catkin REQUIRED bondcpp cmake_modules message_generation pluginlib 
 ## Find Boost (only headers)
 find_package(Boost REQUIRED)
 
-## Find UUID libraries
-find_package(UUID REQUIRED)
+if(NOT APPLE)
+  ## Find UUID libraries
+  find_package(UUID REQUIRED)
+endif()
 
 ## Add service files to be generated
 add_service_files(DIRECTORY srv FILES NodeletList.srv  NodeletLoad.srv  NodeletUnload.srv)
@@ -16,12 +18,21 @@ add_service_files(DIRECTORY srv FILES NodeletList.srv  NodeletLoad.srv  NodeletU
 ## Generate servics
 generate_messages(DEPENDENCIES std_msgs)
 
-catkin_package(
-  INCLUDE_DIRS include ${UUID_INCLUDE_DIRS}
-  LIBRARIES nodeletlib ${UUID_LIBRARIES}
-  CATKIN_DEPENDS bondcpp message_runtime pluginlib rosconsole roscpp std_msgs
-  DEPENDS Boost
-)
+if(APPLE)
+  catkin_package(
+    INCLUDE_DIRS include
+    LIBRARIES nodeletlib
+    CATKIN_DEPENDS bondcpp message_runtime pluginlib rosconsole roscpp std_msgs
+    DEPENDS Boost
+  )
+else()
+  catkin_package(
+    INCLUDE_DIRS include ${UUID_INCLUDE_DIRS}
+    LIBRARIES nodeletlib ${UUID_LIBRARIES}
+    CATKIN_DEPENDS bondcpp message_runtime pluginlib rosconsole roscpp std_msgs
+    DEPENDS Boost
+  )
+endif()
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS})
 
@@ -33,7 +44,12 @@ target_link_libraries(nodeletlib ${catkin_LIBRARIES} ${BOOST_LIBRARIES})
 add_dependencies(nodeletlib ${nodelet_EXPORTED_TARGETS})
 
 add_executable(nodelet src/nodelet.cpp)
-target_link_libraries(nodelet nodeletlib ${UUID_LIBRARIES} ${catkin_LIBRARIES} ${BOOST_LIBRARIES})
+
+if(APPLE)
+  target_link_libraries(nodelet nodeletlib ${catkin_LIBRARIES} ${BOOST_LIBRARIES})
+else()
+  target_link_libraries(nodelet nodeletlib ${UUID_LIBRARIES} ${catkin_LIBRARIES} ${BOOST_LIBRARIES})
+endif()
 
 # install
 install(DIRECTORY include/${PROJECT_NAME}/
