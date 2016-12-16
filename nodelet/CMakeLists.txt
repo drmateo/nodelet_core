@@ -52,6 +52,8 @@ else()
 endif()
 
 # install
+catkin_install_python(PROGRAMS scripts/declared_nodelets
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
